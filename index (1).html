@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Love Ecommerce — Smart Pricing Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0f1117;
+    --ink-light: #4a4f5e;
+    --ink-faint: #9299a8;
+    --surface: #ffffff;
+    --surface-2: #f5f6fa;
+    --surface-3: #eef0f6;
+    --accent: #3a5bef;
+    --accent-soft: #e8ecfd;
+    --accent-hover: #2944d4;
+    --success: #0e9f6e;
+    --success-soft: #e3f9f0;
+    --warning: #d97706;
+    --warning-soft: #fef3c7;
+    --danger: #e03e3e;
+    --danger-soft: #fde8e8;
+    --border: #e2e5ef;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(58,91,239,0.07), 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 40px rgba(58,91,239,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--surface-2);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .brand-icon svg { width: 18px; height: 18px; fill: white; }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: white !important;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    transition: background 0.2s !important;
+  }
+
+  .nav-cta:hover { background: var(--accent-hover) !important; color: white !important; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #1a2255 0%, #3a5bef 60%, #5b7fff 100%);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    position: relative;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.8);
+    max-width: 520px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    max-width: 960px;
+    margin: -2rem auto 4rem;
+    padding: 0 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-header-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-soft);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    font-size: 1rem;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .card-subtitle {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    margin-top: 1px;
+  }
+
+  /* GRID LAYOUT */
+  .calculator-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    padding: 1.75rem;
+  }
+
+  /* HAMBURGER */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition: all 0.25s;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 0; right: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    gap: 4px;
+    z-index: 99;
+    animation: slideDown 0.2s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    padding: 12px 14px;
+    border-radius: 10px;
+    transition: background 0.15s;
+  }
+  .mobile-menu a:hover { background: var(--surface-2); }
+  .mobile-menu .mobile-menu-cta {
+    background: var(--accent);
+    color: white !important;
+    font-weight: 600 !important;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .mobile-menu .mobile-menu-cta:hover { background: var(--accent-hover) !important; }
+
+  @media (max-width: 640px) {
+    .calculator-grid { grid-template-columns: 1fr; }
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .hero { padding: 3.5rem 1.25rem 3rem; }
+    .main { margin: -1.5rem auto 2.5rem; }
+    .card-header { padding: 1rem 1.25rem; }
+    .calculator-grid { padding: 1.25rem; }
+    .results-grid { grid-template-columns: 1fr 1fr; padding: 1.25rem; }
+    .breakdown-body { padding: 1.25rem; }
+  }
+
+  /* INPUT FIELD */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+
+  .field-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .field-label .unit {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--ink-faint);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-prefix {
+    position: absolute;
+    left: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    pointer-events: none;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .input-suffix {
+    position: absolute;
+    right: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    height: 44px;
+    background: var(--surface-2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]::placeholder { color: #b0b6c3; font-weight: 400; }
+
+  input[type="number"]:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(58,91,239,0.1);
+  }
+
+  .has-prefix input { padding-left: 28px; }
+  .has-suffix input { padding-right: 32px; }
+
+  /* DIVIDER */
+  .section-divider {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .section-divider hr {
+    flex: 1;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* CALCULATE BUTTON */
+  .calc-btn-wrap {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+
+  .calc-btn {
+    width: 100%;
+    height: 50px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Sora', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+
+  .calc-btn:hover { background: var(--accent-hover); }
+  .calc-btn:active { transform: scale(0.99); }
+
+  .calc-btn svg { width: 18px; height: 18px; stroke: white; fill: none; stroke-width: 2; }
+
+  /* RESULTS */
+  .results-section {
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .results-section.visible { display: block; }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1.75rem;
+  }
+
+  .stat-card {
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.15rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+  }
+
+  .stat-card.primary::before { background: var(--accent); }
+  .stat-card.success::before { background: var(--success); }
+  .stat-card.warning::before { background: var(--warning); }
+  .stat-card.neutral::before { background: var(--ink-faint); }
+
+  .stat-label {
+    font-size: 0.73rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-value.primary { color: var(--accent); }
+  .stat-value.success { color: var(--success); }
+  .stat-value.warning { color: var(--warning); }
+
+  .stat-note {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+
+  /* BREAKDOWN TABLE */
+  .breakdown-section {
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .breakdown-section.visible { display: block; }
+
+  .breakdown-body {
+    padding: 1.75rem;
+  }
+
+  .breakdown-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin-bottom: 1rem;
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--surface-3);
+    font-size: 0.875rem;
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row .label { color: var(--ink-light); }
+  .breakdown-row .value {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .breakdown-row.total {
+    border-top: 1.5px solid var(--border);
+    border-bottom: none;
+    margin-top: 4px;
+    padding-top: 12px;
+    font-weight: 600;
+  }
+
+  .breakdown-row.total .label { color: var(--ink); font-weight: 600; }
+  .breakdown-row.total .value { color: var(--accent); font-size: 1rem; }
+
+  /* INSIGHT BANNER */
+  .insight {
+    margin: 0 1.75rem 1.75rem;
+    background: linear-gradient(135deg, var(--accent-soft), #f0f3fe);
+    border: 1px solid rgba(58,91,239,0.15);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    display: none;
+  }
+
+  .insight.visible { display: flex; }
+
+  .insight-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .insight-text {
+    font-size: 0.83rem;
+    color: var(--accent-hover);
+    line-height: 1.5;
+  }
+
+  .insight-text strong { font-weight: 600; }
+
+  /* FEATURES STRIP */
+  .features {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 2.5rem 1.5rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: var(--ink-light);
+    box-shadow: var(--shadow);
+  }
+
+  .feature-pill .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  footer strong { color: var(--accent); }
+
+  /* ANIMATIONS */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stat-card { transition: background 0.2s; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 20 20"><path d="M10 2L2 7l8 5 8-5-8-5zM2 13l8 5 8-5M2 10l8 5 8-5"/></svg>
+    </div>
+    I Love Ecommerce
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#" onclick="closeMenu();document.getElementById('about-modal').classList.add('open');return false;">About</a></li>
+    <li><a href="#" onclick="closeMenu();document.getElementById('queries-modal').classList.add('open');return false;" class="nav-cta">Queries</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#" onclick="closeMobileMenu();document.getElementById('about-modal').classList.add('open');return false;">About</a>
+  <a href="#" onclick="closeMobileMenu();document.getElementById('queries-modal').classList.add('open');return false;" class="mobile-menu-cta">Queries</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">✦ Product Pricing Tool</div>
+  <h1>Set the right price,<br>every time.</h1>
+  <p>Calculate optimal selling prices factoring in GST, commissions, shipping, and your profit goals — in seconds.</p>
+</div>
+
+<!-- MAIN CALCULATOR -->
+<div class="main">
+  <div class="card">
+    <!-- Header -->
+    <div class="card-header">
+      <div class="card-header-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <div>
+        <div class="card-title">Pricing Calculator</div>
+        <div class="card-subtitle">Enter your cost details below</div>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <div class="calculator-grid">
+      <!-- Income goal -->
+      <div class="section-divider">
+        <span>Income Goal</span>
+        <hr>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label class="field-label" for="income">Monthly Target Income <span class="unit">(₹)</span></label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">₹</span>
+          <input type="number" id="income" placeholder="50000" min="0">
+        </div>
+      </div>
+
+      <!-- Cost Inputs -->
+      <div class="section-divider">
+        <span>Cost Inputs</span>
+        <hr>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="raw">Raw Cost / Unit <span class="unit">(₹)</span></label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">₹</span>
+          <input type="number" id="raw" placeholder="100" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="packaging">Packaging Cost <span class="unit">(₹)</span></label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">₹</span>
+          <input type="number" id="packaging" placeholder="12" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="shipping">Shipping Charge <span class="unit">(₹)</span></label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">₹</span>
+          <input type="number" id="shipping" placeholder="20" min="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="returns">Return Rate <span class="unit">(%)</span></label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="returns" placeholder="10" min="0" max="100">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <!-- Tax & Margins -->
+      <div class="section-divider">
+        <span>Tax &amp; Margins</span>
+        <hr>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="gst">GST Rate <span class="unit">(%)</span></label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="gst" placeholder="18" min="0" max="100">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="profit">Profit Margin <span class="unit">(%)</span></label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="profit" placeholder="20" min="0">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <label class="field-label" for="commission">Commission Rate <span class="unit">(% or 0)</span></label>
+        <div class="input-wrap has-suffix" style="margin-bottom:8px;">
+          <input type="number" id="commission" placeholder="10" min="0" max="100">
+          <span class="input-suffix">%</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:7px; margin-top:2px;">
+          <div style="font-size:0.71rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-faint); width:100%; margin-bottom:1px;">Quick fill by platform</div>
+          <button type="button" onclick="setPlatform('amazon',15)" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1.5px solid #e2e5ef;background:#fff8f0;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:Sora,sans-serif;color:#c45e00;transition:all 0.15s;" onmouseover="this.style.borderColor='#c45e00';this.style.background='#fff1e0'" onmouseout="this.style.borderColor='#e2e5ef';this.style.background='#fff8f0'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#FF9900"/><path d="M5 13.5c3.5 2.5 10.5 2.5 14 0" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M17.5 12l1.5 1.5-1.5 1.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Amazon <span style="opacity:0.6;font-weight:400;">15%</span>
+          </button>
+          <button type="button" onclick="setPlatform('flipkart',12)" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1.5px solid #e2e5ef;background:#f0f4ff;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:Sora,sans-serif;color:#1a4fd6;transition:all 0.15s;" onmouseover="this.style.borderColor='#1a4fd6';this.style.background='#e0e9ff'" onmouseout="this.style.borderColor='#e2e5ef';this.style.background='#f0f4ff'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#2874F0"/><text x="4" y="17" font-size="13" font-weight="800" fill="white" font-family="Arial">F</text></svg>
+            Flipkart <span style="opacity:0.6;font-weight:400;">12%</span>
+          </button>
+          <button type="button" onclick="setPlatform('meesho',10)" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1.5px solid #e2e5ef;background:#fdf0ff;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:Sora,sans-serif;color:#8b1abf;transition:all 0.15s;" onmouseover="this.style.borderColor='#8b1abf';this.style.background='#f5e0ff'" onmouseout="this.style.borderColor='#e2e5ef';this.style.background='#fdf0ff'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#9B2FAC"/><text x="4" y="17" font-size="12" font-weight="800" fill="white" font-family="Arial">M</text></svg>
+            Meesho <span style="opacity:0.6;font-weight:400;">10%</span>
+          </button>
+          <button type="button" onclick="setPlatform('myntra',18)" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1.5px solid #e2e5ef;background:#fff0f4;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:Sora,sans-serif;color:#c0003c;transition:all 0.15s;" onmouseover="this.style.borderColor='#c0003c';this.style.background='#ffe0eb'" onmouseout="this.style.borderColor='#e2e5ef';this.style.background='#fff0f4'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#FF3F6C"/><text x="3" y="17" font-size="12" font-weight="800" fill="white" font-family="Arial">M</text></svg>
+            Myntra <span style="opacity:0.6;font-weight:400;">18%</span>
+          </button>
+          <button type="button" onclick="setPlatform('snapdeal',14)" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1.5px solid #e2e5ef;background:#fff8f0;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:Sora,sans-serif;color:#c44e00;transition:all 0.15s;" onmouseover="this.style.borderColor='#c44e00';this.style.background='#ffeedd'" onmouseout="this.style.borderColor='#e2e5ef';this.style.background='#fff8f0'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#E40000"/><text x="3" y="17" font-size="12" font-weight="800" fill="white" font-family="Arial">S</text></svg>
+            Snapdeal <span style="opacity:0.6;font-weight:400;">14%</span>
+          </button>
+          <button type="button" onclick="setPlatform('nykaa',20)" style="display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;border:1.5px solid #e2e5ef;background:#fff0fa;cursor:pointer;font-size:0.78rem;font-weight:600;font-family:Sora,sans-serif;color:#ad006e;transition:all 0.15s;" onmouseover="this.style.borderColor='#ad006e';this.style.background='#ffe0f5'" onmouseout="this.style.borderColor='#e2e5ef';this.style.background='#fff0fa'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#FC2779"/><text x="3" y="17" font-size="12" font-weight="800" fill="white" font-family="Arial">N</text></svg>
+            Nykaa <span style="opacity:0.6;font-weight:400;">20%</span>
+          </button>
+        </div>
+        <div id="platform-tag" style="display:none; margin-top:8px; font-size:0.75rem; color:var(--ink-faint);">
+          ✔ <span id="platform-name"></span> commission applied
+          <button type="button" onclick="clearPlatform()" style="background:none;border:none;color:var(--accent);font-size:0.75rem;cursor:pointer;margin-left:4px;font-family:Sora,sans-serif;">Clear</button>
+        </div>
+      </div>
+
+      <!-- Button -->
+      <div class="calc-btn-wrap">
+        <button class="calc-btn" onclick="calculate()">
+          <svg viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3"/><path d="M9 15h3l8.5-8.5a1.5 1.5 0 00-3-3L9 12v3"/><path d="M16 5l3 3"/></svg>
+          Calculate Optimal Price
+        </button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section" id="results">
+      <div class="results-grid">
+        <div class="stat-card primary">
+          <div class="stat-label">Selling Price</div>
+          <div class="stat-value primary" id="res-price">—</div>
+          <div class="stat-note">Recommended per unit</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Net Profit / Order</div>
+          <div class="stat-value success" id="res-profit">—</div>
+          <div class="stat-note">After all deductions</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Orders Needed</div>
+          <div class="stat-value warning" id="res-orders">—</div>
+          <div class="stat-note">To hit monthly target</div>
+        </div>
+        <div class="stat-card neutral">
+          <div class="stat-label">Daily Orders</div>
+          <div class="stat-value" id="res-daily">—</div>
+          <div class="stat-note">Across 30 days</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown-section" id="breakdown">
+      <div class="breakdown-body">
+        <div class="breakdown-title">📊 Cost Breakdown</div>
+        <div class="breakdown-row"><span class="label">Raw Material</span><span class="value" id="b-raw">—</span></div>
+        <div class="breakdown-row"><span class="label">Packaging</span><span class="value" id="b-pkg">—</span></div>
+        <div class="breakdown-row"><span class="label">Shipping</span><span class="value" id="b-ship">—</span></div>
+        <div class="breakdown-row"><span class="label">GST (<span id="b-gst-pct">18</span>%)</span><span class="value" id="b-gst">—</span></div>
+        <div class="breakdown-row"><span class="label">Commission (<span id="b-comm-pct">10</span>%)</span><span class="value" id="b-comm">—</span></div>
+        <div class="breakdown-row"><span class="label">Return Cost Buffer</span><span class="value" id="b-ret">—</span></div>
+        <div class="breakdown-row total"><span class="label">Total Cost / Unit</span><span class="value" id="b-total">—</span></div>
+      </div>
+    </div>
+
+    <!-- Insight -->
+    <div class="insight" id="insight">
+      <div class="insight-icon">💡</div>
+      <div class="insight-text" id="insight-text"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE PILLS -->
+<div class="features">
+  <div class="feature-pill"><span class="dot"></span>GST-aware calculations</div>
+  <div class="feature-pill"><span class="dot"></span>Return rate buffer</div>
+  <div class="feature-pill"><span class="dot"></span>Commission included</div>
+  <div class="feature-pill"><span class="dot"></span>Instant results</div>
+  <div class="feature-pill"><span class="dot"></span>No signup needed</div>
+</div>
+
+<!-- QUERIES MODAL -->
+<div id="queries-modal" style="display:none; position:fixed; inset:0; background:rgba(15,17,23,0.55); z-index:999; align-items:center; justify-content:center; padding:1.5rem;">
+  <div style="background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow-lg); max-width:460px; width:100%; padding:2rem; position:relative; animation:slideUp 0.25s ease; max-height:90vh; overflow-y:auto;">
+    <button onclick="document.getElementById('queries-modal').classList.remove('open');" style="position:absolute; top:14px; right:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:1rem; color:var(--ink-light); display:flex; align-items:center; justify-content:center;">&#x2715;</button>
+
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-size:1rem; font-weight:700; color:var(--ink); margin-bottom:4px;">Send us a Query</div>
+      <div style="font-size:0.8rem; color:var(--ink-faint);">Have a question or suggestion? We&#39;d love to hear from you.</div>
+    </div>
+
+    <div id="query-success" style="display:none; background:var(--success-soft); border:1px solid #6ee7c7; border-radius:10px; padding:16px; text-align:center; margin-bottom:1rem;">
+      <div style="font-size:1.5rem; margin-bottom:6px;">&#10003;</div>
+      <div style="font-size:0.9rem; font-weight:600; color:var(--success);">Message sent successfully!</div>
+      <div style="font-size:0.8rem; color:var(--success); margin-top:4px;">We&#39;ll get back to you soon.</div>
+    </div>
+
+    <div id="query-form">
+      <div style="display:flex; flex-direction:column; gap:14px;">
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-light);">Your Name</label>
+          <input type="text" id="q-name" placeholder="e.g. Ravi Kumar" style="height:44px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:8px; padding:0 12px; font-size:0.9rem; font-family:Sora,sans-serif; color:var(--ink); outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(58,91,239,0.1)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-light);">Email Address</label>
+          <input type="email" id="q-email" placeholder="you@example.com" style="height:44px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:8px; padding:0 12px; font-size:0.9rem; font-family:Sora,sans-serif; color:var(--ink); outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(58,91,239,0.1)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-light);">Phone Number <span style="font-weight:400;color:var(--ink-faint);text-transform:none;">(optional)</span></label>
+          <input type="tel" id="q-phone" placeholder="+91 98765 43210" style="height:44px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:8px; padding:0 12px; font-size:0.9rem; font-family:Sora,sans-serif; color:var(--ink); outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(58,91,239,0.1)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-light);">Query Type</label>
+          <select id="q-type" style="height:44px; background:var(--surface-2); border:1.5px solid var(--border); border-radius:8px; padding:0 12px; font-size:0.9rem; font-family:Sora,sans-serif; color:var(--ink); outline:none; appearance:none; cursor:pointer; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            <option value="">Select a topic...</option>
+            <option>Pricing Calculation Help</option>
+            <option>GST or Tax Query</option>
+            <option>Feature Request</option>
+            <option>Bug Report</option>
+            <option>Business Partnership</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-light);">Your Message</label>
+          <textarea id="q-message" placeholder="Describe your query in detail..." rows="4" style="background:var(--surface-2); border:1.5px solid var(--border); border-radius:8px; padding:10px 12px; font-size:0.9rem; font-family:Sora,sans-serif; color:var(--ink); outline:none; resize:vertical; min-height:100px; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 3px rgba(58,91,239,0.1)'" onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"></textarea>
+        </div>
+
+        <div id="q-error" style="display:none; background:var(--danger-soft); border:1px solid #fca5a5; border-radius:8px; padding:10px 12px; font-size:0.82rem; color:var(--danger);"></div>
+
+        <button onclick="submitQuery()" style="width:100%; height:48px; background:var(--accent); color:white; border:none; border-radius:8px; font-size:0.95rem; font-weight:600; font-family:Sora,sans-serif; cursor:pointer; transition:background 0.2s; margin-top:4px;" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">
+          Send Message &#8594;
+        </button>
+
+        <p style="font-size:0.75rem; color:var(--ink-faint); text-align:center; margin-top:-4px;">We usually respond within 24 hours &nbsp;&#183;&nbsp; <a href="mailto:rajarshimajumder50@gmail.com" style="color:var(--accent); text-decoration:none;">rajarshimajumder50@gmail.com</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div id="about-modal" style="display:none; position:fixed; inset:0; background:rgba(15,17,23,0.55); z-index:999; align-items:center; justify-content:center; padding:1.5rem;">
+  <div style="background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow-lg); max-width:440px; width:100%; padding:2rem; position:relative; animation:slideUp 0.25s ease; max-height:90vh; overflow-y:auto;">
+    <button onclick="document.getElementById('about-modal').classList.remove('open');" style="position:absolute; top:14px; right:14px; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:1rem; color:var(--ink-light); display:flex; align-items:center; justify-content:center;">&#x2715;</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem;">
+      <div style="width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="white"><path d="M10 2L2 7l8 5 8-5-8-5zM2 13l8 5 8-5M2 10l8 5 8-5"/></svg>
+      </div>
+      <div>
+        <div style="font-size:1rem; font-weight:700; color:var(--ink);">I Love Ecommerce</div>
+        <div style="font-size:0.78rem; color:var(--ink-faint);">Smart Pricing for Modern Sellers</div>
+      </div>
+    </div>
+    <p style="font-size:0.875rem; color:var(--ink-light); line-height:1.7; margin-bottom:1.5rem;">We built this tool to help Indian ecommerce sellers price their products correctly — factoring in GST, commissions, returns, and profit goals — without needing a spreadsheet.</p>
+    <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-faint); margin-bottom:0.75rem;">Founders</div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface-2); border-radius:10px; padding:12px 14px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--accent); flex-shrink:0;">R</div>
+        <div>
+          <div style="font-size:0.875rem; font-weight:600; color:var(--ink);">Rajarshi</div>
+          <a href="mailto:rajarshimajumder50@gmail.com" style="font-size:0.78rem; color:var(--accent); text-decoration:none;">rajarshimajumder50@gmail.com</a>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface-2); border-radius:10px; padding:12px 14px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--accent); flex-shrink:0;">P</div>
+        <div>
+          <div style="font-size:0.875rem; font-weight:600; color:var(--ink);">Parthib</div>
+          <div style="font-size:0.78rem; color:var(--ink-faint);">Developer</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-faint); margin:1.25rem 0 0.75rem;">Team</div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface-2); border-radius:10px; padding:12px 14px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--accent); flex-shrink:0;">S</div>
+        <div>
+          <div style="font-size:0.875rem; font-weight:600; color:var(--ink);">Susmit Mitra</div>
+          <div style="font-size:0.78rem; color:var(--ink-faint);">Developer</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface-2); border-radius:10px; padding:12px 14px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--accent); flex-shrink:0;">S</div>
+        <div>
+          <div style="font-size:0.875rem; font-weight:600; color:var(--ink);">Saptarshi</div>
+          <div style="font-size:0.78rem; color:var(--ink-faint);">Lead</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; background:var(--surface-2); border-radius:10px; padding:12px 14px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:var(--accent); flex-shrink:0;">S</div>
+        <div>
+          <div style="font-size:0.875rem; font-weight:600; color:var(--ink);">Sanjib</div>
+          <div style="font-size:0.78rem; color:var(--ink-faint);">Tester</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Built with &#10084; by <strong>I Love Ecommerce</strong> &nbsp;&middot;&nbsp; Free to use
+</footer>
+
+<script>
+  function submitQuery() {
+    const name = document.getElementById('q-name').value.trim();
+    const email = document.getElementById('q-email').value.trim();
+    const type = document.getElementById('q-type').value;
+    const message = document.getElementById('q-message').value.trim();
+    const err = document.getElementById('q-error');
+    err.style.display = 'none';
+    if (!name) { err.textContent = 'Please enter your name.'; err.style.display='block'; return; }
+    if (!email || !email.includes('@')) { err.textContent = 'Please enter a valid email address.'; err.style.display='block'; return; }
+    if (!type) { err.textContent = 'Please select a query type.'; err.style.display='block'; return; }
+    if (!message) { err.textContent = 'Please write your message.'; err.style.display='block'; return; }
+    document.getElementById('query-form').style.display = 'none';
+    document.getElementById('query-success').style.display = 'block';
+    setTimeout(() => {
+      document.getElementById('queries-modal').classList.remove('open');
+      setTimeout(() => {
+        document.getElementById('query-form').style.display = 'block';
+        document.getElementById('query-success').style.display = 'none';
+        document.getElementById('q-name').value = '';
+        document.getElementById('q-email').value = '';
+        document.getElementById('q-phone').value = '';
+        document.getElementById('q-type').value = '';
+        document.getElementById('q-message').value = '';
+      }, 400);
+    }, 2200);
+  }
+
+  const qmodal = document.getElementById('queries-modal');
+  qmodal.addEventListener('click', e => { if(e.target === qmodal) qmodal.classList.remove('open'); });
+  const qobs = new MutationObserver(() => { qmodal.style.display = qmodal.classList.contains('open') ? 'flex' : 'none'; });
+  qobs.observe(qmodal, { attributes: true, attributeFilter: ['class'] });
+
+  const modal = document.getElementById('about-modal');
+  modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
+  const obs = new MutationObserver(() => { modal.style.display = modal.classList.contains('open') ? 'flex' : 'none'; });
+  obs.observe(modal, { attributes: true, attributeFilter: ['class'] });
+</script>
+
+<script>
+function fmt(n) {
+  return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calculate() {
+  const income    = parseFloat(document.getElementById('income').value) || 0;
+  const raw       = parseFloat(document.getElementById('raw').value) || 0;
+  const pkg       = parseFloat(document.getElementById('packaging').value) || 0;
+  const shipping  = parseFloat(document.getElementById('shipping').value) || 0;
+  const returnPct = parseFloat(document.getElementById('returns').value) || 0;
+  const gstPct    = parseFloat(document.getElementById('gst').value) || 0;
+  const profitPct = parseFloat(document.getElementById('profit').value) || 0;
+  const commPct   = parseFloat(document.getElementById('commission').value) || 0;
+
+  // Base cost
+  const baseCost = raw + pkg + shipping;
+
+  // GST on base cost
+  const gstAmt = baseCost * (gstPct / 100);
+
+  // Cost after GST
+  const costAfterGST = baseCost + gstAmt;
+
+  // Commission on cost after GST
+  const commAmt = costAfterGST * (commPct / 100);
+
+  // Return buffer: return % of base cost
+  const returnBuffer = baseCost * (returnPct / 100);
+
+  // Total cost
+  const totalCost = costAfterGST + commAmt + returnBuffer;
+
+  // Selling price with profit margin
+  const sellingPrice = totalCost / (1 - profitPct / 100);
+
+  // Net profit per order
+  const netProfit = sellingPrice - totalCost;
+
+  // Orders needed
+  const ordersNeeded = Math.ceil(income / netProfit);
+  const dailyOrders  = Math.ceil(ordersNeeded / 30);
+
+  // Update stats
+  document.getElementById('res-price').textContent  = fmt(sellingPrice);
+  document.getElementById('res-profit').textContent = fmt(netProfit);
+  document.getElementById('res-orders').textContent = ordersNeeded.toLocaleString('en-IN');
+  document.getElementById('res-daily').textContent  = dailyOrders;
+
+  // Update breakdown
+  document.getElementById('b-raw').textContent    = fmt(raw);
+  document.getElementById('b-pkg').textContent    = fmt(pkg);
+  document.getElementById('b-ship').textContent   = fmt(shipping);
+  document.getElementById('b-gst-pct').textContent = gstPct;
+  document.getElementById('b-gst').textContent    = fmt(gstAmt);
+  document.getElementById('b-comm-pct').textContent = commPct;
+  document.getElementById('b-comm').textContent   = fmt(commAmt);
+  document.getElementById('b-ret').textContent    = fmt(returnBuffer);
+  document.getElementById('b-total').textContent  = fmt(totalCost);
+
+  // Insight
+  let insight = '';
+  if (profitPct < 15) {
+    insight = `<strong>Low margin alert:</strong> Your profit margin of ${profitPct}% is below the recommended 15–20% for sustainable e-commerce. Consider reducing costs or increasing the margin.`;
+  } else if (dailyOrders > 50) {
+    insight = `<strong>High volume target:</strong> You need ${dailyOrders} orders/day to meet your goal. Consider raising prices slightly or lowering the target — a ${Math.round(profitPct + 5)}% margin would reduce daily orders by ~20%.`;
+  } else if (returnPct > 15) {
+    insight = `<strong>High return rate:</strong> A ${returnPct}% return rate is adding ₹${(returnBuffer).toFixed(2)} per unit to your costs. Improving product quality or descriptions could significantly boost your net profit.`;
+  } else {
+    insight = `<strong>Looking good!</strong> At ${fmt(sellingPrice)} per unit with a ${profitPct}% margin, you need just <strong>${dailyOrders} orders/day</strong> to reach ₹${income.toLocaleString('en-IN')}/month. That's very achievable.`;
+  }
+
+  document.getElementById('insight-text').innerHTML = insight;
+
+  // Show sections
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('breakdown').classList.add('visible');
+  document.getElementById('insight').classList.add('visible');
+
+}
+
+function toggleMenu() {
+  const ham = document.getElementById('hamburger');
+  const menu = document.getElementById('mobile-menu');
+  ham.classList.toggle('open');
+  menu.classList.toggle('open');
+}
+function closeMenu() {
+  document.getElementById('hamburger').classList.remove('open');
+  document.getElementById('mobile-menu').classList.remove('open');
+}
+function closeMobileMenu() { closeMenu(); }
+
+function setPlatform(name, pct) {
+  document.getElementById('commission').value = pct;
+  document.getElementById('platform-name').textContent = name.charAt(0).toUpperCase() + name.slice(1) + ' (' + pct + '%)';
+  document.getElementById('platform-tag').style.display = 'block';
+}
+function clearPlatform() {
+  document.getElementById('commission').value = '';
+  document.getElementById('platform-tag').style.display = 'none';
+}
+// Auto-calculate on load
+window.addEventListener('load', calculate);
+
+
+</script>
+</body>
+</html>
